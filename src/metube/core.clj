@@ -16,10 +16,12 @@
                              "-t"
                              url))]
       (when-not (zero? exit)
+        (println "Non-zero exit downloading:" url)
         (throw (Exception. (str "error downloading " url)))))
     true))
 
 (defn download-youtube-url [url]
+  (println "Received download request for:" url)
   (try
     (let [resp (try-try-again
                 :sleep 5000
