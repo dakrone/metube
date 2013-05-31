@@ -13,12 +13,11 @@
 (defn download
   [url]
   (when youtube-dl-enabled?
-    (let [exit (:exit (sh/sh youtube-dl-cmd
-                             "-t"
-                             url))]
+    (let [resp (sh/sh youtube-dl-cmd url "-t")
+          exit (:exit resp)]
       (when-not (zero? exit)
         (println "Non-zero exit downloading:" url)
-        (throw (Exception. (str "error downloading " url)))))
+        (throw (Exception. (str "error downloading " url (:err resp))))))
     true))
 
 (defn download-youtube-url [url]
@@ -29,8 +28,11 @@
                 :tries 5
                 :error-hook
                 (fn [e]
-                  (msg/publish qn (str "Error downloading: " url
-                                       ", trying again. [" *try* "/5] tries")))
+                  (let [s (str "Error downloading: " url ", trying again. ["
+                               *try* "/5] tries - " (str e))]
+                    (println s)
+                    (msg/publish qn s)
+                    nil))
                 #(download url))]
       (when resp
         (msg/publish qn (str "Successfully downloaded " url))))
