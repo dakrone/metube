@@ -1,6 +1,7 @@
 (ns metube.core
   (:require [robert.bruce :refer [try-try-again *try*]]
             [clojure.java.shell :as sh]
+            [clojure.java.io :refer [reader]]
             [immutant.messaging :as msg]))
 
 (def qn "queue.notifications")
@@ -35,3 +36,23 @@
         (msg/publish qn (str "Successfully downloaded " url))))
     (catch Throwable e
       (msg/publish qn (str "Unable to download: " url ", reason: " e)))))
+
+(defn metube-handler
+  "Handler for enqueuing youtube download requests"
+  [request]
+  (try
+    (let [url (slurp (reader (:body request)))]
+      (if (and (string? url) (not (empty? url)))
+        (do
+          (msg/publish qn (str "Enqueuing download of " url))
+          (msg/publish "queue.metube" url)
+          {:status 200
+           :body (str {:success true} "\n")
+           :headers {"Content-Type" "application/edn"}})
+        {:status 500
+         :body (str {:success false :exception "No URL specified"} "\n")
+         :headers {"Content-Type" "application/edn"}}))
+    (catch Throwable e
+      {:status 500
+       :body (str {:success false :exception (str e)} "\n")
+       :headers {"Content-Type" "application/edn"}})))
