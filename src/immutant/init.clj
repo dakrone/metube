@@ -13,5 +13,4 @@
 ;; Set up metube HTTP notification handler
 (web/start "/"
            metube.core/metube-handler
-           :init #(msg/publish notify-queue "Initialized metube HTTP handler")
-           :destroy #(msg/publish notify-queue "Destroyed metube HTTP handler"))
+           :init #(msg/publish notify-queue "Initialized metube HTTP handler"))
