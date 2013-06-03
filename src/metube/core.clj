@@ -2,6 +2,7 @@
   (:require [robert.bruce :refer [try-try-again *try*]]
             [clojure.java.shell :as sh]
             [clojure.java.io :refer [copy reader]]
+            [clojure.tools.logging :as log]
             [compojure.core :refer :all]
             [compojure.handler :as handler]
             [immutant.cache :as cache]
@@ -23,13 +24,13 @@
     (let [resp (sh/with-sh-dir download-dir (sh/sh youtube-dl-cmd url "-t"))
           exit (:exit resp)]
       (when-not (zero? exit)
-        (println "Non-zero exit downloading:" url)
-        (println "Output:" resp)
+        (log/warn "Non-zero exit downloading:" url)
+        (log/debug "Output:" resp)
         (throw (Exception. (str "error downloading " url (:err resp))))))
     true))
 
 (defn download-youtube-url [url]
-  (println "Received download request for:" url)
+  (log/info "Received download request for:" url)
   (try
     (cache/put stats-cache
                :active
