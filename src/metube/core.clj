@@ -49,9 +49,7 @@
   "Handler for enqueuing youtube download requests"
   [request]
   (try
-    (let [body (:body request)
-          url (slurp body)]
-      (println "URL:" url)
+    (let [url (slurp (:body request))]
       (if (and (string? url) (not (empty? url)))
         (do
           (msg/publish qn (str "Queuing download of " url))
@@ -78,4 +76,5 @@
   (GET "/active" [] (active-requests))
   (ANY "/" request (enqueue-handler request)))
 
-(def handler (-> #'metube-routes handler/api))
+(def handler metube-routes)
+
