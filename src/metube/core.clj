@@ -13,7 +13,7 @@
 (def youtube-dl-cmd "youtube-dl")
 (def download-dir "/home/hinmanm/Downloads")
 
-(def stats-cache (cache/cache "metube-stats"))
+(def stats-cache (cache/cache "metube-stats" :persist true))
 
 (defonce youtube-dl-enabled?
   (= 0 (:exit (sh/sh "which" "youtube-dl"))))
@@ -29,12 +29,19 @@
         (throw (Exception. (str "error downloading " url (:err resp))))))
     true))
 
+(defn get-active []
+  (get stats-cache :active 0))
+
+(defn inc-active []
+  (cache/put stats-cache :active (inc (get-active))))
+
+(defn dec-active []
+  (cache/put stats-cache :active (dec (get-active))))
+
 (defn download-youtube-url [url]
   (log/info "Received download request for:" url)
   (try
-    (cache/put stats-cache
-               :active
-               (inc (get stats-cache :active 0)))
+    (inc-active)
     ;; TODO retries
     (let [resp (download url)]
       (when resp
@@ -43,9 +50,7 @@
       (msg/publish qn (str "Unable to download: " url ", reason: " e)))
     (finally
       (try
-        (cache/put stats-cache
-                  :active
-                  (dec (get stats-cache :active)))
+        (dec-active)
         (catch Exception e
           (log/warn e "Exception decrementing active cache"))))))
 

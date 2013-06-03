@@ -7,4 +7,5 @@
                  [robert/bruce "0.7.1"]
                  [org.immutant/immutant "1.0.0.beta1"]
                  [compojure "1.1.5"]
-                 [org.clojure/tools.logging "0.2.6"]])
+                 [org.clojure/tools.logging "0.2.6"]]
+  :immutant {:nrepl-port "10000"})
