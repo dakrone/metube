@@ -42,9 +42,12 @@
     (catch Throwable e
       (msg/publish qn (str "Unable to download: " url ", reason: " e)))
     (finally
-      (cache/put stats-cache
-                 :active
-                 (dec (get stats-cache :active))))))
+      (try
+        (cache/put stats-cache
+                  :active
+                  (dec (get stats-cache :active)))
+        (catch Exception e
+          (log/warn e "Exception decrementing active cache"))))))
 
 (defn enqueue-handler
   "Handler for enqueuing youtube download requests"
@@ -78,4 +81,3 @@
   (ANY "/" request (enqueue-handler request)))
 
 (def handler metube-routes)
-
