@@ -21,6 +21,7 @@
 (defn download
   [url]
   (when youtube-dl-enabled?
+    (log/info "Starting metube download for" url)
     (let [resp (sh/with-sh-dir download-dir (sh/sh youtube-dl-cmd url "-t"))
           exit (:exit resp)]
       (when-not (zero? exit)
@@ -43,7 +44,11 @@
   (try
     (inc-active)
     ;; TODO retries
-    (let [resp (download url)]
+    (let [resp (download url)
+          resp (try-try-again {:sleep 2000
+                               :tries 5
+                               :catch [Exception]}
+                              #(download url))]
       (when resp
         (msg/publish qn (str "Successfully downloaded " url))))
     (catch Throwable e
