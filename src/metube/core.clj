@@ -44,6 +44,7 @@
   (try
     (inc-active)
     ;; TODO retries
+    (msg/publish qn (str "Beginning download of " url))
     (let [resp (download url)
           resp (try-try-again {:sleep 2000
                                :tries 5
