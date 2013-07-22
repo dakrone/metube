@@ -10,13 +10,13 @@
   (:import (java.io ByteArrayOutputStream)))
 
 (def qn "queue.notifications")
-(def youtube-dl-cmd "youtube-dl")
-(def download-dir "/home/hinmanm/Downloads")
+(def youtube-dl-cmd "/usr/local/bin/youtube-dl")
+(def download-dir "/Users/hinmanm/Downloads")
 
 (def stats-cache (cache/cache "metube-stats" :persist true))
 
 (defonce youtube-dl-enabled?
-  (= 0 (:exit (sh/sh "which" "youtube-dl"))))
+  (= 0 (:exit (sh/sh "which" youtube-dl-cmd))))
 
 (defn download
   [url]
